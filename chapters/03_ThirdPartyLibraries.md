@@ -16,6 +16,7 @@ Writing everything from scratch is educational but impractical:
 | Immediate mode GUI | Months | Dear ImGui |
 | Logging | Days | spdlog |
 | Image loading | Days | stb_image |
+| 3D model loading | Weeks | tinygltf |
 
 Using battle-tested libraries lets us focus on what matters: **learning the engine architecture**.
 
@@ -309,6 +310,153 @@ stbi_set_flip_vertically_on_load(1);  // Flip Y axis when loading
 
 ---
 
+## tinygltf - 3D Model Loading
+
+**What it does:** Loads glTF and GLB 3D model files.
+
+**Why we need it:** Artists create 3D models in tools like Blender, Maya, or 3ds Max. We need to load these models into our engine. glTF ("GL Transmission Format") is the modern standard for 3D assets - often called the "JPEG of 3D".
+
+### Why glTF?
+
+| Format | Pros | Cons |
+|--------|------|------|
+| **OBJ** | Simple, text-based | No materials, no animations, outdated |
+| **FBX** | Industry standard, full-featured | Proprietary (Autodesk), complex |
+| **glTF** | Open standard, PBR materials, compact | Newer (less legacy support) |
+
+glTF is designed for real-time rendering with:
+- **PBR materials** - Physically-based rendering properties
+- **Binary format** - `.glb` files are compact and fast to load
+- **Extensible** - Supports custom extensions
+- **Web-friendly** - Used by Three.js, Babylon.js, etc.
+
+### Single-Header Library
+
+Like stb_image, tinygltf is a single-header library:
+
+```cpp
+// In ONE .cpp file:
+#define TINYGLTF_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION      // tinygltf uses stb_image internally
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "tiny_gltf.h"
+
+// In other files, just:
+#include "tiny_gltf.h"
+```
+
+### Loading a Model
+
+```cpp
+tinygltf::Model model;
+tinygltf::TinyGLTF loader;
+std::string err, warn;
+
+// Load binary glTF (.glb)
+bool success = loader.LoadBinaryFromFile(&model, &err, &warn, "model.glb");
+
+// Or load JSON glTF (.gltf)
+// bool success = loader.LoadASCIIFromFile(&model, &err, &warn, "model.gltf");
+
+if (!warn.empty())
+    std::cout << "Warning: " << warn << std::endl;
+
+if (!err.empty())
+    std::cerr << "Error: " << err << std::endl;
+
+if (!success)
+    return false;
+```
+
+### glTF Structure
+
+A glTF file contains:
+
+```
+model
+├── scenes[]          ← Collection of nodes
+├── nodes[]           ← Transform hierarchy
+├── meshes[]          ← Geometry data
+│   └── primitives[]  ← Actual vertex/index data
+├── materials[]       ← PBR material properties
+├── textures[]        ← Texture references
+├── images[]          ← Embedded or external images
+├── accessors[]       ← How to read buffer data
+├── bufferViews[]     ← Slices of buffers
+└── buffers[]         ← Raw binary data
+```
+
+### Extracting Geometry
+
+```cpp
+// Access mesh primitives
+for (const auto& mesh : model.meshes)
+{
+    for (const auto& primitive : mesh.primitives)
+    {
+        // Get position accessor
+        const auto& posAccessor = model.accessors[primitive.attributes.at("POSITION")];
+        const auto& posView = model.bufferViews[posAccessor.bufferView];
+        const auto& posBuffer = model.buffers[posView.buffer];
+        
+        const float* positions = reinterpret_cast<const float*>(
+            posBuffer.data.data() + posView.byteOffset + posAccessor.byteOffset
+        );
+        
+        // Now 'positions' points to vertex position data
+        // Similar process for NORMAL, TEXCOORD_0, indices...
+    }
+}
+```
+
+### Accessing Materials
+
+```cpp
+for (const auto& material : model.materials)
+{
+    // PBR Metallic-Roughness workflow
+    auto& pbr = material.pbrMetallicRoughness;
+    
+    glm::vec4 baseColor(
+        pbr.baseColorFactor[0],
+        pbr.baseColorFactor[1],
+        pbr.baseColorFactor[2],
+        pbr.baseColorFactor[3]
+    );
+    
+    float metallic = pbr.metallicFactor;
+    float roughness = pbr.roughnessFactor;
+    
+    // Base color texture (if any)
+    if (pbr.baseColorTexture.index >= 0)
+    {
+        int texIndex = pbr.baseColorTexture.index;
+        int imageIndex = model.textures[texIndex].source;
+        const auto& image = model.images[imageIndex];
+        // image.image contains pixel data, image.width/height for dimensions
+    }
+}
+```
+
+### Why tinygltf Over Alternatives
+
+| Library | Description |
+|---------|-------------|
+| **tinygltf** | Header-only, C++11, uses stb_image (we already have it) |
+| **cgltf** | Single-header C library, very fast, but C API |
+| **fastgltf** | Modern C++17, fastest, but newer/less tutorials |
+| **Assimp** | Supports 40+ formats, but heavy dependency |
+
+tinygltf fits our engine because:
+- Header-only (like stb_image)
+- Uses stb_image for image loading (we already use it)
+- Well-documented with many examples
+- Battle-tested in production
+
+> **Location:** `VizEngine/vendor/tinygltf/`
+
+---
+
 ## How the vendor/ Folder is Organized
 
 ```
@@ -317,7 +465,8 @@ VizEngine/vendor/
 ├── glm/            ← Math library
 ├── imgui/          ← GUI library
 ├── spdlog/         ← Logging
-└── stb_image/      ← Image loading
+├── stb_image/      ← Image loading
+└── tinygltf/       ← 3D model loading
 ```
 
 Each folder contains:
@@ -385,6 +534,7 @@ It's important to know what versions we're using:
 | Dear ImGui | 1.89+ | Docking branch available |
 | spdlog | 1.11+ | Fast, feature-rich |
 | stb_image | 2.28+ | Single header |
+| tinygltf | 2.8+ | Header-only, glTF/GLB loading |
 
 ---
 
@@ -396,7 +546,8 @@ It's important to know what versions we're using:
 4. **ImGui is immediate mode** - Describe UI every frame
 5. **spdlog is production-ready logging** - Fast, flexible, formatted
 6. **stb_image is simple** - One header, loads common formats
-7. **vendor/ folder keeps dependencies organized** - Each library in its own folder
+7. **tinygltf loads 3D models** - glTF/GLB format, PBR materials
+8. **vendor/ folder keeps dependencies organized** - Each library in its own folder
 
 ---
 

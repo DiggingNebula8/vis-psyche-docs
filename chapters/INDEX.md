@@ -10,7 +10,7 @@ A hands-on guide to building a 3D rendering engine from scratch.
 1. **[Introduction](00_Introduction.md)** - What we're building and why
 2. **[Build System](01_BuildSystem.md)** - CMake, project structure, building
 3. **[DLL Architecture](02_DLLArchitecture.md)** - Exports, namespaces, entry points
-4. **[Third-Party Libraries](03_ThirdPartyLibraries.md)** - GLFW, GLAD, GLM, ImGui, spdlog, stb_image
+4. **[Third-Party Libraries](03_ThirdPartyLibraries.md)** - GLFW, GLAD, GLM, ImGui, spdlog, stb_image, tinygltf
 
 ### Part 2: Infrastructure
 5. **[Window & Context](04_WindowAndContext.md)** - GLFWManager, OpenGL context, input
@@ -27,6 +27,9 @@ A hands-on guide to building a 3D rendering engine from scratch.
 
 ### Part 5: Graphics II
 12. **[Lighting](11_Lighting.md)** - Blinn-Phong model, normals, directional lights
+
+### Part 6: Assets
+13. **[Model Loading](12_ModelLoading.md)** - glTF format, tinygltf, PBR materials
 
 ### Appendices
 - **[Appendix A: Code Reference](A_Reference.md)** - Class diagrams, file reference, debugging tips
@@ -62,6 +65,8 @@ Read chapters in order. Each builds on the previous:
       ↓
 11 Lighting ←── Make it look 3D
       ↓
+12 Model Loading ←── Load external 3D models
+      ↓
 Appendix A ←── Reference material
 ```
 
@@ -93,7 +98,7 @@ Use [Appendix A](A_Reference.md) as a quick reference for class diagrams and fil
 
 This is a **living document**. As the engine grows, new chapters will be added:
 
-- [ ] Model Loading
+- [x] Model Loading
 - [ ] Input System
 - [ ] Audio
 - [ ] Physics

@@ -20,6 +20,7 @@ As of now, VizPsyche has:
 - **Dear ImGui** - Immediate mode GUI
 - **spdlog** - Fast, formatted logging
 - **stb_image** - Image loading
+- **tinygltf** - glTF/GLB 3D model loading
 
 ### OpenGL Abstractions {#opengl}
 - VertexBuffer (VBO wrapper)
@@ -38,10 +39,11 @@ As of now, VizPsyche has:
 - Mesh (geometry with factory methods)
 - Scene (object collection management)
 - SceneObject (mesh + transform + color bundle)
+- Model (glTF model container with meshes and materials)
+- Material (PBR material properties)
 
 ### Lighting
 - DirectionalLight (sun-like parallel rays)
-- Material properties (shininess)
 
 ### GUI
 - UIManager (ImGui integration)
@@ -77,7 +79,9 @@ As of now, VizPsyche has:
 | `Core/Mesh.h` | Geometry abstraction with factories |
 | `Core/Scene.h` | Scene object collection manager |
 | `Core/SceneObject.h` | Mesh + Transform + Color bundle |
-| `Core/Light.h` | DirectionalLight, PointLight, Material |
+| `Core/Light.h` | DirectionalLight, PointLight |
+| `Core/Model.h` | glTF model loader (meshes + materials) |
+| `Core/Material.h` | PBR material properties (baseColor, metallic, roughness) |
 
 ### OpenGL
 
@@ -148,6 +152,17 @@ VizEngine (namespace)
 │   ├── MeshPtr, ObjectTransform, Color, Active, Name
 │   └── Bundles mesh + transform for rendering
 │
+├── Model
+│   ├── LoadFromFile() [static factory]
+│   ├── GetMeshes(), GetMaterials()
+│   ├── GetMaterialForMesh()
+│   └── Loads glTF/GLB files via tinygltf
+│
+├── Material (struct)
+│   ├── BaseColor, Metallic, Roughness
+│   ├── BaseColorTexture, NormalTexture
+│   └── PBR material properties
+│
 ├── DirectionalLight (struct)
 │   ├── Direction, Ambient, Diffuse, Specular
 │   └── GetDirection() → normalized
@@ -206,10 +221,12 @@ Resource-owning classes delete copy operations and implement move operations.
 | IndexBuffer | Mesh | Until Mesh destroyed |
 | VertexArray | Mesh | Until Mesh destroyed |
 | Shader | Application | Until scope ends |
-| Texture | Application | Until scope ends |
-| Mesh (shared_ptr) | Scene/Application | Until last reference gone |
+| Texture | Application/Model | Until scope ends or last reference gone |
+| Mesh (shared_ptr) | Scene/Application/Model | Until last reference gone |
 | Camera | Application stack | Until function returns |
 | Transform | SceneObject | Until SceneObject destroyed |
+| Model (unique_ptr) | Application | Until scope ends |
+| Material | Model | Until Model destroyed |
 
 ### No Raw `new`/`delete`
 
@@ -330,7 +347,7 @@ cmake --build build --config Debug
 |-------|---------|
 | CMake, build system | [01 Build System](01_BuildSystem.md) |
 | DLL exports, __declspec | [02 DLL Architecture](02_DLLArchitecture.md) |
-| GLFW, GLAD, GLM, ImGui, spdlog | [03 Third-Party Libraries](03_ThirdPartyLibraries.md) |
+| GLFW, GLAD, GLM, ImGui, spdlog, tinygltf | [03 Third-Party Libraries](03_ThirdPartyLibraries.md) |
 | GLFWManager, context | [04 Window & Context](04_WindowAndContext.md) |
 | Log class, VP_* macros | [05 Logging System](05_LoggingSystem.md) |
 | Buffers, shaders, pipeline | [06 OpenGL Fundamentals](06_OpenGLFundamentals.md) |
@@ -339,6 +356,7 @@ cmake --build build --config Debug
 | Camera, Transform, Mesh | [09 Engine Architecture](09_EngineArchitecture.md) |
 | Scene, SceneObject | [10 Multiple Objects](10_MultipleObjects.md) |
 | DirectionalLight, Blinn-Phong | [11 Lighting](11_Lighting.md) |
+| Model, Material, glTF, tinygltf | [12 Model Loading](12_ModelLoading.md) |
 
 ---
 
@@ -349,8 +367,10 @@ cmake --build build --config Debug
 3. **Mouse look** - Rotate camera with mouse
 4. **New shader** - Create a wireframe shader
 5. **New mesh** - Implement `Mesh::CreateSphere()`
-6. **Material class** - Bundle Shader + Texture together
-7. **Point light** - Implement a point light with attenuation
-8. **Multiple lights** - Support an array of lights in the shader
+6. **Point light** - Implement a point light with attenuation
+7. **Multiple lights** - Support an array of lights in the shader
+8. **Load a glTF model** - Use `Model::LoadFromFile()` with a sample model
+9. **Model browser** - Add ImGui file picker to load models at runtime
+10. **PBR rendering** - Upgrade shader to use full metallic-roughness workflow
 
 

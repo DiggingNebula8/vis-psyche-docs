@@ -312,7 +312,8 @@ This is basic lighting. Production engines add:
 
 ---
 
-> **Reference:** For class diagrams and file locations, see [Appendix A: Code Reference](A_Reference.md).
+> **Next:** [Chapter 12: Model Loading](12_ModelLoading.md) - Loading external 3D models with glTF.
 
+> **Reference:** For class diagrams and file locations, see [Appendix A: Code Reference](A_Reference.md).
 
 

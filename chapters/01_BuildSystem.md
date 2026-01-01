@@ -116,16 +116,21 @@ The `$<BUILD_INTERFACE:...>` is a "generator expression" - it only applies when 
 ### Compile Definitions
 
 ```cmake
+# Platform detection
+if(WIN32)
+    set(PLATFORM_DEFINITIONS VP_PLATFORM_WINDOWS)
+endif()
+
 target_compile_definitions(VizEngine
     PUBLIC
-        $<$<PLATFORM_ID:Windows>:VP_PLATFORM_WINDOWS>
+        ${PLATFORM_DEFINITIONS}
     PRIVATE
         VP_BUILD_DLL
 )
 ```
 
 These are preprocessor `#define`s:
-- `VP_PLATFORM_WINDOWS` - Defined on Windows (used for platform code)
+- `VP_PLATFORM_WINDOWS` - Defined on Windows (used for platform-specific code in `Core.h`)
 - `VP_BUILD_DLL` - Tells our code we're building the DLL (for export macros)
 
 ### Linking Libraries

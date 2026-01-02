@@ -18,6 +18,7 @@ chapters:
   - chapters/12_Lighting.md
   - chapters/13_ModelLoading.md
   - chapters/14_InputSystem.md
+  - chapters/15_CameraController.md
 
 appendices:
   - chapters/A_Reference.md

@@ -465,7 +465,7 @@ For now, direct key checks are sufficient.
 
 ---
 
-> **Next:** [Chapter 15: Advanced OpenGL](15_AdvancedOpenGL.md) - Framebuffers, depth/stencil testing, cubemaps.
+> **Next:** [Chapter 15: Camera Controller](15_CameraController.md) - WASD movement, mouse look, scroll zoom.
 
 > **Reference:** For the complete Input implementation, see [Appendix A: Code Reference](A_Reference.md#input).
 

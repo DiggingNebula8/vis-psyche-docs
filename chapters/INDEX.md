@@ -36,10 +36,11 @@ A hands-on guide to building a 3D rendering engine from scratch.
 
 ### Part 8: Input
 15. **[Input System](14_InputSystem.md)** - Keyboard, mouse, polling vs events, edge detection
+16. **[Camera Controller](15_CameraController.md)** - WASD movement, mouse look, scroll zoom
 
 ### Part 9: Graphics III
-16. **[Advanced OpenGL](15_AdvancedOpenGL.md)** - Framebuffers, depth/stencil testing, cubemaps, instancing *(planned)*
-17. **[Advanced Lighting](16_AdvancedLighting.md)** - Shadows, PBR rendering, HDR, bloom, tone mapping *(planned)*
+17. **[Advanced OpenGL](16_AdvancedOpenGL.md)** - Framebuffers, depth/stencil testing, cubemaps, instancing *(planned)*
+18. **[Advanced Lighting](17_AdvancedLighting.md)** - Shadows, PBR rendering, HDR, bloom, tone mapping *(planned)*
 
 ### Part 10: Editor II
 18. **[Editor UI Framework](17_EditorUI.md)** - Docking, panels, property inspector, asset browser *(planned)*
@@ -129,7 +130,8 @@ This is a **living document**. As the engine grows, new chapters will be added:
 - [x] Model Loading
 - [x] Editor I (Dear ImGui)
 - [x] Input System
-- [ ] Advanced OpenGL
+- [x] Camera Controller
+- [ ] Advanced OpenGL *(next)*
 - [ ] Advanced Lighting
 - [ ] Editor II (UI Framework)
 - [ ] Entity Component System

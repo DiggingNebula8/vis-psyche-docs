@@ -315,7 +315,7 @@ public:
         
         if (!m_LocalBuffer)
         {
-            std::cerr << "Failed to load texture: " << path << std::endl;
+            VP_CORE_ERROR("Failed to load texture: {}", path);
             return;
         }
         

@@ -62,9 +62,9 @@ Create **`VizEngine/src/VizEngine/OpenGL/GLFWManager.cpp`**:
 
 ```cpp
 #include "GLFWManager.h"
+#include "VizEngine/Log.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <iostream>
 
 namespace VizEngine
 {
@@ -73,7 +73,7 @@ namespace VizEngine
     {
         // Step 1: Initialize GLFW
         if (!glfwInit()) {
-            std::cerr << "Failed to initialize GLFW\n";
+            VP_CORE_ERROR("Failed to initialize GLFW");
             return;
         }
         
@@ -86,7 +86,7 @@ namespace VizEngine
         m_Window = glfwCreateWindow(width, height, title.c_str(), 
                                     nullptr, nullptr);
         if (!m_Window) {
-            std::cerr << "Failed to create GLFW window\n";
+            VP_CORE_ERROR("Failed to create GLFW window");
             glfwTerminate();
             return;
         }
@@ -96,7 +96,7 @@ namespace VizEngine
         
         // Step 5: Load OpenGL functions via GLAD
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-            std::cerr << "Failed to initialize GLAD\n";
+            VP_CORE_ERROR("Failed to initialize GLAD");
             return;
         }
         

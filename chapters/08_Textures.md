@@ -195,7 +195,7 @@ Texture::Texture(const std::string& path)
 
     if (!data)
     {
-        std::cerr << "Failed to load texture: " << path << std::endl;
+        VP_CORE_ERROR("Failed to load texture: {}", path);
         return;
     }
 

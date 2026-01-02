@@ -93,7 +93,7 @@ This generated `glad.h` and `glad.c` which we include in our project.
 // After creating GLFW window and context:
 if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 {
-    std::cerr << "Failed to initialize GLAD" << std::endl;
+    VP_CORE_ERROR("Failed to initialize GLAD");
     return -1;
 }
 // Now all OpenGL functions are available!

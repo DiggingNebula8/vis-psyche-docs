@@ -323,8 +323,8 @@ public:
         glGenTextures(1, &m_RendererID);
         glBindTexture(GL_TEXTURE_2D, m_RendererID);
         
-        // Filtering
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        // Filtering (use mipmaps for minification)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         
         // Wrapping
@@ -334,6 +334,7 @@ public:
         // Upload to GPU
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_Width, m_Height, 
                      0, GL_RGBA, GL_UNSIGNED_BYTE, m_LocalBuffer);
+        glGenerateMipmap(GL_TEXTURE_2D);
         
         // Free CPU memory (data is now on GPU)
         stbi_image_free(m_LocalBuffer);

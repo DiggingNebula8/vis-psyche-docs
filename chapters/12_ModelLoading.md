@@ -1230,6 +1230,24 @@ Failed to load positions for mesh, skipping primitive
 
 The loader only supports `COLOR_0` attributes with `FLOAT` component type. The glTF spec also allows `UNSIGNED_BYTE` and `UNSIGNED_SHORT` (normalized to [0, 1]). Models using these types will log a warning and fall back to white vertex colors.
 
+### Buffer Validation
+
+The loader includes defensive validation against malformed glTF files:
+
+- **Accessor/BufferView/Buffer indices** are bounds-checked before access
+- **Buffer data size** is validated against `accessor.count` before reading
+- **Optional attributes** (NORMAL, TEXCOORD_0, COLOR_0) gracefully fall back if their buffers are too small
+
+If a malformed file is detected, primitives or attributes are skipped with error/warning messages rather than crashing:
+
+```
+Accessor bufferView index 999 out of range
+Position buffer too small for accessor.count, skipping primitive
+Normal buffer too small, skipping attribute
+```
+
+This makes the loader safe to use with untrusted glTF files.
+
 ---
 
 ## Key Takeaways

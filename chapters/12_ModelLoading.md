@@ -1209,17 +1209,20 @@ Our glTF loader has some limitations for simplicity:
 
 ### Interleaved Vertex Data
 
-The loader assumes **tightly-packed vertex attributes** (no byteStride). glTF allows interleaved vertex data where positions, normals, and UVs are woven together in memory:
+The loader supports **tightly-packed vertex attributes** but not true interleaved data. glTF allows interleaved vertex data where positions, normals, and UVs are woven together in memory:
 
 ```
 Tightly-packed: [P0 P1 P2...] [N0 N1 N2...] [UV0 UV1 UV2...]
 Interleaved:    [P0 N0 UV0] [P1 N1 UV1] [P2 N2 UV2]...
 ```
 
-If a model uses interleaved data, the primitive is **skipped** with an error:
+The loader accepts:
+- `byteStride = 0` (default, tightly packed)
+- `byteStride = elementSize` (e.g., 12 for vec3, 8 for vec2)
+
+If a model uses true interleaved data with a stride larger than the element size, the primitive is **skipped** with an error:
 ```
-glTF buffer has unsupported byteStride (32), cannot load interleaved data
-Failed to load positions for mesh, skipping primitive
+glTF buffer has unsupported byteStride (32), expected 0 or 12
 ```
 
 **In practice:** Standard exports from Blender, Maya, and most tools use tightly-packed buffers. The Duck and most Khronos sample models work correctly.

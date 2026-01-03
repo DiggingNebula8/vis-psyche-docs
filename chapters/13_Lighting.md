@@ -1,12 +1,12 @@
 \newpage
 
-# Chapter 12: Lighting (Blinn-Phong)
+# Chapter 13: Lighting (Blinn-Phong)
 
 ## The Problem: Flat Objects
 
 Look at our scene before lighting:
 
-![Flat Objects](images/11-flat-objects.png)
+![Flat Objects](images/13-flat-objects.png)
 
 Without lighting, a cube looks like a hexagon. A sphere looks like a circle. We lose all sense of 3D form.
 
@@ -28,7 +28,7 @@ We can't simulate every photon (that's ray tracing). Instead, we use mathematica
 
 The Blinn-Phong model breaks lighting into three components:
 
-![Blinn-Phong Components](images/11-blinn-phong-components.png)
+![Blinn-Phong Components](images/13-blinn-phong-components.png)
 
 **Final Color = Ambient + Diffuse + Specular**
 
@@ -46,7 +46,7 @@ Without ambient, surfaces facing away from the light would be pure black.
 
 Surfaces facing the light are brighter. This is **Lambert's Cosine Law**:
 
-![Lambert's Diffuse](images/11-lambert-diffuse.png)
+![Lambert's Diffuse](images/13-lambert-diffuse.png)
 
 The math uses the **dot product** of the surface normal and light direction:
 
@@ -63,7 +63,7 @@ vec3 diffuse = lightDiffuse * diff * objectColor;
 
 Shiny highlights. Blinn-Phong uses a **half vector** between the light and view directions:
 
-![Half Vector](images/11-half-vector.png)
+![Half Vector](images/13-half-vector.png)
 
 ```glsl
 vec3 viewDir = normalize(cameraPos - fragmentPos);
@@ -81,7 +81,34 @@ The `shininess` exponent controls highlight size:
 - Low (8-16): Matte, wide highlights
 - High (64-256): Glossy, tight highlights
 
-> **Note:** In our engine, we use **Roughness** (0-1) instead of a raw shininess exponent. The shader converts roughness to shininess internally: `shininess = mix(256.0, 8.0, roughness)`. A roughness of 0 = shiny (high exponent), roughness of 1 = matte (low exponent).
+### Roughness vs Shininess
+
+**Why use Roughness?**
+
+Traditional Blinn-Phong uses a `shininess` exponent (8-256), but modern engines use **Roughness** (0-1) because:
+- More intuitive: 0 = smooth/glossy, 1 = rough/matte
+- Artist-friendly: Easy to understand without math
+- PBR-ready: Roughness is standard in Physically Based Rendering (future chapter)
+
+**The Conversion:**
+
+| Roughness | Shininess | Appearance |
+|-----------|-----------|------------|
+| 0.0 | 256 | Mirror-like, tight highlight |
+| 0.25 | 194 | Glossy plastic |
+| 0.5 | 132 | Satin finish |
+| 0.75 | 70 | Slightly rough |
+| 1.0 | 8 | Completely matte, wide highlight |
+
+**Shader Formula:**
+```glsl
+float shininess = mix(256.0, 8.0, u_Roughness);
+```
+
+This linearly interpolates: `roughness=0` → `shininess=256`, `roughness=1` → `shininess=8`.
+
+> [!TIP]
+> **Forward Compatibility:** We use Roughness now because it's the standard in PBR (Physically Based Rendering). When we implement full PBR in a future **Advanced Lighting** chapter, the same roughness values will work directly with the new shaders.
 
 ---
 
@@ -89,11 +116,14 @@ The `shininess` exponent controls highlight size:
 
 A **normal** is a vector perpendicular to a surface. Lighting calculations depend entirely on normals.
 
-![Surface Normal](images/11-surface-normal.png)
+![Surface Normal](images/13-surface-normal.png)
 
 ### Adding Normals to Vertices
 
-We need to add a `Normal` field to the `Vertex` struct (from [Chapter 11](11_MultipleObjects.md)):
+We need to add a `Normal` field to the `Vertex` struct (from [Chapter 10: Transform & Mesh](10_TransformAndMesh.md)):
+
+> [!NOTE]
+> **Vertex Struct Recap:** This is the same `Vertex` struct from [Chapter 10](10_TransformAndMesh.md). The `Normal` field was already included in anticipation of lighting. If you're building along, you should already have this.
 
 ```cpp
 // Update Vertex in VizEngine/Core/Mesh.h
@@ -119,7 +149,7 @@ layout.Push<float>(2); // TexCoords
 
 For **flat shading** (our current approach), each face has its own normal. For **smooth shading**, vertices share averaged normals:
 
-![Face vs Smooth Normals](images/11-face-vs-smooth-normals.png)
+![Face vs Smooth Normals](images/13-face-vs-smooth-normals.png)
 
 We use flat shading because it's simpler and works well for hard-edged geometry like cubes.
 
@@ -345,7 +375,7 @@ This chapter covered Blinn-Phong lighting:
 
 ---
 
-> **Next:** [Chapter 13: Model Loading](13_ModelLoading.md) - Loading external 3D models with glTF.
+> **Next:** [Chapter 14: Model Loading](14_ModelLoading.md) - Loading external 3D models with glTF.
 
 > **Reference:** For class diagrams and file locations, see [Appendix A: Code Reference](A_Reference.md).
 

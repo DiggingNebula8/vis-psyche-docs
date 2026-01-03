@@ -1,6 +1,6 @@
 \newpage
 
-# Chapter 14: Input System
+# Chapter 15: Input System
 
 ## The Problem
 
@@ -465,7 +465,7 @@ For now, direct key checks are sufficient.
 
 ---
 
-> **Next:** [Chapter 15: Camera Controller](15_CameraController.md) - WASD movement, mouse look, scroll zoom.
+> **Next:** [Chapter 16: Camera Controller](16_CameraController.md) - WASD movement, mouse look, scroll zoom.
 
 > **Reference:** For the complete Input implementation, see [Appendix A: Code Reference](A_Reference.md#input).
 

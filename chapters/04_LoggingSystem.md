@@ -1,6 +1,6 @@
 \newpage
 
-# Chapter 5: Logging System
+# Chapter 4: Logging System
 
 Logging is the engine developer's best friend. When something goes wrong (and it will), logs tell you what happened. Our logging system wraps spdlog to provide clean, categorized, performant logging.
 
@@ -344,4 +344,4 @@ if (newState != oldState)
 
 ---
 
-> **Next:** [Chapter 6: OpenGL Fundamentals](06_OpenGLFundamentals.md) - Understanding the graphics pipeline.
+> **Next:** [Chapter 5: Window & Context](05_WindowAndContext.md) - Creating a window and OpenGL context.

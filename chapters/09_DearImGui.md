@@ -516,7 +516,7 @@ This chapter covered Dear ImGui for debug/editor UI:
 
 ---
 
-> **Next:** [Chapter 10: Engine Architecture](10_EngineArchitecture.md) - Separating concerns with Transform, Camera, and Mesh classes.
+> **Next:** [Chapter 10: Transform & Mesh](10_TransformAndMesh.md) - Building blocks for 3D objects.
 
 > **Reference:** For the complete UIManager implementation, see [Appendix A: Code Reference](A_Reference.md#gui).
 

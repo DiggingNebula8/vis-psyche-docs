@@ -411,6 +411,53 @@ renderer.Draw(vao, ibo, shader);
 
 ---
 
+## The Renderer Class
+
+The `Renderer` class provides a clean interface for draw operations:
+
+```cpp
+// VizEngine/OpenGL/Renderer.h
+
+class VizEngine_API Renderer
+{
+public:
+    void Clear(const glm::vec4& color) const;
+    void Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const;
+};
+```
+
+### Implementation
+
+```cpp
+void Renderer::Clear(const glm::vec4& color) const
+{
+    glClearColor(color.r, color.g, color.b, color.a);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void Renderer::Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const
+{
+    shader.Bind();
+    va.Bind();
+    glDrawElements(GL_TRIANGLES, ib.GetCount(), GL_UNSIGNED_INT, nullptr);
+}
+```
+
+### Why a Renderer Class?
+
+| Without Renderer | With Renderer |
+|------------------|---------------|
+| `glClearColor(...)` + `glClear(...)` | `renderer.Clear(color)` |
+| Manual VAO bind + `glDrawElements(...)` | `renderer.Draw(vao, ibo, shader)` |
+| OpenGL calls scattered everywhere | One place for all draw logic |
+
+The Renderer centralizes all draw commands, making it easy to add features like:
+- Draw call counting (profiling)
+- Automatic state management
+- Batching (future optimization)
+
+---
+
 ## Key Takeaways
 
 1. **RAII manages resources** - Constructor acquires, destructor releases
@@ -444,6 +491,7 @@ This chapter covered wrapping OpenGL in C++ classes:
 | `VertexArray` | VAO wrapper with layout |
 | `Shader` | Compile + uniform helpers |
 | `Texture` | Image loading + sampling |
+| `Renderer` | Clear screen + draw calls |
 
 **Pattern:** RAII + Rule of 5
 

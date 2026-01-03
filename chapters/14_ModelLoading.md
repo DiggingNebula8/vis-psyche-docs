@@ -1,6 +1,6 @@
 \newpage
 
-# Chapter 13: Model Loading (glTF)
+# Chapter 14: Model Loading (glTF)
 
 ## The Problem: Hardcoded Geometry
 
@@ -189,6 +189,14 @@ This gives you access to many test models:
 ### Loading a Model in Application
 
 Here's how to load the Duck model:
+
+> [!NOTE]
+> **Integration with Scene Management:** This code uses the `Scene` class from [Chapter 12](12_SceneManagement.md). The key connection:
+> - `Model::LoadFromFile()` returns a Model containing `shared_ptr<Mesh>` objects
+> - `Scene::Add()` accepts a `shared_ptr<Mesh>` (same type!)
+> - `SceneObject::TexturePtr` stores the model's embedded texture
+> 
+> The Model class extracts meshes from glTF, and Scene manages them - they work together seamlessly.
 
 ```cpp
 // In Application.cpp - include the Model header

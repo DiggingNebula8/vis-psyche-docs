@@ -75,8 +75,8 @@ Each chapter builds on the previous. The concepts stack:
 3. **[Third-Party Libraries](03_ThirdPartyLibraries.md)** - The libraries we use and why
 
 ### Part 2: Infrastructure
-4. **[Window & Context](04_WindowAndContext.md)** - GLFW and OpenGL context
-5. **[Logging System](05_LoggingSystem.md)** - Tracking what happens in the engine
+4. **[Logging System](04_LoggingSystem.md)** - Tracking what happens in the engine
+5. **[Window & Context](05_WindowAndContext.md)** - GLFW and OpenGL context
 
 ### Part 3: Graphics
 6. **[OpenGL Fundamentals](06_OpenGLFundamentals.md)** - The graphics pipeline
@@ -86,13 +86,20 @@ Each chapter builds on the previous. The concepts stack:
 ### Part 4: Editor I
 9. **[Dear ImGui](09_DearImGui.md)** - Debug UI for development
 
-### Part 5: Engine
-10. **[Engine Architecture](10_EngineArchitecture.md)** - Proper game engine structure
-11. **[Multiple Objects & Scene](11_MultipleObjects.md)** - Managing complex scenes
+### Part 5: Engine Architecture
+10. **[Transform & Mesh](10_TransformAndMesh.md)** - Position, rotation, scale, geometry
+11. **[Camera System](11_CameraSystem.md)** - View and projection matrices
+12. **[Scene Management](12_SceneManagement.md)** - Managing multiple objects
 
-### Part 6: Advanced Graphics
-12. **[Lighting](12_Lighting.md)** - Blinn-Phong lighting model
-13. **[Model Loading](13_ModelLoading.md)** - Loading glTF models with PBR materials
+### Part 6: Graphics II
+13. **[Lighting](13_Lighting.md)** - Blinn-Phong lighting model
+
+### Part 7: Assets
+14. **[Model Loading](14_ModelLoading.md)** - Loading glTF models with PBR materials
+
+### Part 8: Input
+15. **[Input System](15_InputSystem.md)** - Keyboard, mouse, polling
+16. **[Camera Controller](16_CameraController.md)** - WASD movement, mouse look
 
 ### Appendices
 - **[Appendix A: Code Reference](A_Reference.md)** - Class diagrams, file reference

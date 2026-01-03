@@ -13,10 +13,10 @@ A hands-on guide to building a 3D rendering engine from scratch.
 4. **[Third-Party Libraries](03_ThirdPartyLibraries.md)** - GLFW, GLAD, GLM, ImGui, spdlog, stb_image, tinygltf
 
 ### Part 2: Infrastructure
-5. **[Window & Context](04_WindowAndContext.md)** - GLFWManager, OpenGL context, input
-6. **[Logging System](05_LoggingSystem.md)** - spdlog wrapper, log levels, macros
+5. **[Logging System](04_LoggingSystem.md)** - spdlog wrapper, log levels, macros
+6. **[Window & Context](05_WindowAndContext.md)** - GLFWManager, OpenGL context, input
 
-### Part 3: Graphics
+### Part 3: Graphics I
 7. **[OpenGL Fundamentals](06_OpenGLFundamentals.md)** - Pipeline, buffers, shaders, coordinates
 8. **[Abstractions](07_Abstractions.md)** - RAII wrappers, Rule of 5, clean APIs
 9. **[Textures](08_Textures.md)** - Image loading, GPU textures, UV mapping
@@ -24,29 +24,27 @@ A hands-on guide to building a 3D rendering engine from scratch.
 ### Part 4: Editor I
 10. **[Dear ImGui](09_DearImGui.md)** - Immediate mode GUI, widgets, UIManager wrapper
 
-### Part 5: Engine
-11. **[Engine Architecture](10_EngineArchitecture.md)** - Camera, Transform, Mesh, separation of concerns
-12. **[Multiple Objects](11_MultipleObjects.md)** - Scene management, shared resources, object selection
+### Part 5: Engine Architecture
+11. **[Transform & Mesh](10_TransformAndMesh.md)** - Position, rotation, scale, geometry factories
+12. **[Camera System](11_CameraSystem.md)** - View/projection matrices, camera movement
+13. **[Scene Management](12_SceneManagement.md)** - SceneObject, shared resources, object selection
 
 ### Part 6: Graphics II
-13. **[Lighting](12_Lighting.md)** - Blinn-Phong model, normals, directional lights
+14. **[Lighting](13_Lighting.md)** - Blinn-Phong model, normals, directional lights
 
 ### Part 7: Assets
-14. **[Model Loading](13_ModelLoading.md)** - glTF format, tinygltf, PBR materials
+15. **[Model Loading](14_ModelLoading.md)** - glTF format, tinygltf, PBR materials
 
 ### Part 8: Input
-15. **[Input System](14_InputSystem.md)** - Keyboard, mouse, polling vs events, edge detection
-16. **[Camera Controller](15_CameraController.md)** - WASD movement, mouse look, scroll zoom
+16. **[Input System](15_InputSystem.md)** - Keyboard, mouse, polling vs events, edge detection
+17. **[Camera Controller](16_CameraController.md)** - WASD movement, mouse look, scroll zoom
 
-### Part 9: Graphics III
-17. **[Advanced OpenGL](16_AdvancedOpenGL.md)** - Framebuffers, depth/stencil testing, cubemaps, instancing *(planned)*
-18. **[Advanced Lighting](17_AdvancedLighting.md)** - Shadows, PBR rendering, HDR, bloom, tone mapping *(planned)*
+### Part 9: Graphics III *(planned)*
+18. **[Advanced OpenGL](17_AdvancedOpenGL.md)** - Framebuffers, depth/stencil, cubemaps
+19. **[Advanced Lighting](18_AdvancedLighting.md)** - Shadows, PBR, HDR, bloom
 
-### Part 10: Editor II
-18. **[Editor UI Framework](17_EditorUI.md)** - Docking, panels, property inspector, asset browser *(planned)*
-
-### Part 11: Engine II
-19. **[Entity Component System](18_ECS.md)** - Components, systems, archetype storage, queries *(planned)*
+### Part 10: Engine II *(planned)*
+20. **[Entity Component System](19_ECS.md)** - Components, systems, queries
 
 ### Appendices
 - **[Appendix A: Code Reference](A_Reference.md)** - Class diagrams, file reference, debugging tips
@@ -66,9 +64,9 @@ Read chapters in order. Each builds on the previous:
       ↓
 03 Third-Party Libraries ←── Know our building blocks
       ↓
-04 Window & Context ←── Create window, OpenGL context
+04 Logging System ←── Track what's happening
       ↓
-05 Logging System ←── Track what's happening
+05 Window & Context ←── Create window, OpenGL context
       ↓
 06 OpenGL Fundamentals ←── Understand graphics basics
       ↓
@@ -76,25 +74,21 @@ Read chapters in order. Each builds on the previous:
       ↓
 08 Textures ←── Add images to geometry
       ↓
-09 Editor I (ImGui) ←── Debug UI for development
+09 Dear ImGui ←── Debug UI for development
       ↓
-10 Engine Architecture ←── Understand how it all fits
+10 Transform & Mesh ←── Geometry and positioning
       ↓
-11 Multiple Objects ←── Manage complex scenes
+11 Camera System ←── View the 3D world
       ↓
-12 Lighting ←── Make it look 3D
+12 Scene Management ←── Manage multiple objects
       ↓
-13 Model Loading ←── Load external 3D models
+13 Lighting ←── Make it look 3D
       ↓
-14 Input System ←── Handle user interaction
+14 Model Loading ←── Load external 3D models
       ↓
-15 Advanced OpenGL ←── Framebuffers, render-to-texture
+15 Input System ←── Handle user interaction
       ↓
-16 Advanced Lighting ←── Shadows, PBR, HDR
-      ↓
-17 Editor II ←── Professional editor interface
-      ↓
-18 ECS ←── Component-based architecture
+16 Camera Controller ←── WASD movement, mouse look
       ↓
 Appendix A ←── Reference material
 ```

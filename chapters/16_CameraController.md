@@ -1,10 +1,10 @@
 \newpage
 
-# Chapter 15: Camera Controller
+# Chapter 16: Camera Controller
 
 ## Building on the Input System
 
-In Chapter 14, we built an Input system with keyboard polling, mouse position tracking, and scroll wheel support. Now we put it to practical use by creating an interactive camera controller.
+In the previous chapter, we built an Input system with keyboard polling, mouse position tracking, and scroll wheel support. Now we put it to practical use by creating an interactive camera controller.
 
 By the end of this chapter, you'll have:
 - WASD movement in camera-relative directions
@@ -325,7 +325,7 @@ This chapter covered building a camera controller:
 
 ---
 
-> **Next:** [Chapter 16: Advanced OpenGL](16_AdvancedOpenGL.md) - Framebuffers, depth/stencil testing, cubemaps.
+> **Next:** [Chapter 17: Advanced OpenGL](17_AdvancedOpenGL.md) - Framebuffers, depth/stencil testing, cubemaps.
 
-> **Previous:** [Chapter 14: Input System](14_InputSystem.md)
+> **Previous:** [Chapter 15: Input System](15_InputSystem.md)
 

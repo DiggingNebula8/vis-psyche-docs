@@ -1,6 +1,6 @@
 \newpage
 
-# Chapter 4: Window & Context
+# Chapter 5: Window & Context
 
 Every graphical application needs a window to display in and an OpenGL context to render with. Our `GLFWManager` class wraps GLFW to handle both, plus input handling.
 
@@ -342,4 +342,4 @@ No need to call cleanup manually — the destructor handles it.
 
 ---
 
-> **Next:** [Chapter 5: Logging System](05_LoggingSystem.md) - How we track what's happening in the engine.
+> **Next:** [Chapter 6: OpenGL Fundamentals](06_OpenGLFundamentals.md) - Understanding the graphics pipeline.

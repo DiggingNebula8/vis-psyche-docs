@@ -6,7 +6,7 @@
 
 Look at our scene before lighting:
 
-![Flat Objects](images/13-flat-objects.png)
+![Flat Objects](../images/15-flat-objects.png)
 
 Without lighting, a cube looks like a hexagon. A sphere looks like a circle. We lose all sense of 3D form.
 
@@ -52,7 +52,7 @@ L_o = L_e + ∫ f_r(ω_i, ω_o) · L_i(ω_i) · cos(θ_i) dω_i
 
 The Blinn-Phong model breaks lighting into three components:
 
-![Blinn-Phong Components](images/13-blinn-phong-components.png)
+![Blinn-Phong Components](../images/15-blinn-phong-components.png)
 
 **Final Color = Ambient + Diffuse + Specular**
 
@@ -70,7 +70,7 @@ Without ambient, surfaces facing away from the light would be pure black.
 
 Surfaces facing the light are brighter. This is **Lambert's Cosine Law**:
 
-![Lambert's Diffuse](images/13-lambert-diffuse.png)
+![Lambert's Diffuse](../images/15-lambert-diffuse.png)
 
 The math uses the **dot product** of the surface normal and light direction:
 
@@ -87,7 +87,7 @@ vec3 diffuse = lightDiffuse * diff * objectColor;
 
 Shiny highlights. Blinn-Phong uses a **half vector** between the light and view directions:
 
-![Half Vector](images/13-half-vector.png)
+![Half Vector](../images/15-half-vector.png)
 
 ```glsl
 vec3 viewDir = normalize(cameraPos - fragmentPos);
@@ -140,7 +140,7 @@ This linearly interpolates: `roughness=0` → `shininess=256`, `roughness=1` →
 
 A **normal** is a vector perpendicular to a surface. Lighting calculations depend entirely on normals.
 
-![Surface Normal](images/13-surface-normal.png)
+![Surface Normal](../images/15-surface-normal.png)
 
 ### Adding Normals to Vertices
 
@@ -173,7 +173,7 @@ layout.Push<float>(2); // TexCoords
 
 For **flat shading** (our current approach), each face has its own normal. For **smooth shading**, vertices share averaged normals:
 
-![Face vs Smooth Normals](images/13-face-vs-smooth-normals.png)
+![Face vs Smooth Normals](../images/15-face-vs-smooth-normals.png)
 
 We use flat shading because it's simpler and works well for hard-edged geometry like cubes.
 

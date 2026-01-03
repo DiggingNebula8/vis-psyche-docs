@@ -166,7 +166,7 @@ OpenGL is a **graphics API** - a set of functions that talk to your GPU. It's:
 
 When you want to draw something, data flows through a pipeline:
 
-![OpenGL Graphics Pipeline](images/06-graphics-pipeline.png)
+![OpenGL Graphics Pipeline](../images/06-graphics-pipeline.png)
 
 1. **Your Data** - Vertices (points in 3D space)
 2. **Vertex Shader** - Runs for each vertex, transforms positions

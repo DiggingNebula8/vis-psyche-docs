@@ -39,6 +39,41 @@ This chapter teaches you to set up each piece. By the end, you'll understand the
 
 ---
 
+## Understanding the CPU-GPU Divide
+
+### Two Separate Processors
+
+Your computer has two very different processors:
+
+| CPU | GPU |
+|-----|-----|
+| General purpose | Specialized for parallel math |
+| ~8-16 cores | ~thousands of cores |
+| System RAM (DDR5) | Video RAM (GDDR6/HBM) |
+| Good at branching | Terrible at branching |
+
+**Key insight:** CPU and GPU have *separate memory*. Every OpenGL call crosses this boundary.
+
+### Why State Changes Are Expensive
+
+OpenGL is a **state machine**. When you call `glBindTexture()`:
+
+1. CPU sends command to driver
+2. Driver translates to GPU command
+3. GPU pipeline may **stall** waiting for previous work
+4. New state propagates to all shader cores
+
+This is why we:
+- **Batch draw calls** - Fewer boundary crossings
+- **Sort by material** - Minimize state changes
+- **Cache uniform locations** - Avoid repeated queries
+- **Upload geometry once** - Reuse from VRAM
+
+> [!TIP]
+> **Performance Rule:** Upload once, draw many times. Every `glBufferData` is expensive; `glDrawElements` is cheap.
+
+---
+
 ## Hello Triangle: Your First Pixel on Screen
 
 Before building abstractions, here is the **absolute minimum** needed to render pixels. This is the "Hello World" of graphics programming.

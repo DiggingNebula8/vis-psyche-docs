@@ -325,7 +325,7 @@ This chapter covered building a camera controller:
 
 ---
 
-> **Next:** [Chapter 17: Advanced OpenGL](17_AdvancedOpenGL.md) - Framebuffers, depth/stencil testing, cubemaps.
+> **Next:** [Chapter 19: Advanced OpenGL](19_AdvancedOpenGL.md) - Framebuffers, depth/stencil testing, cubemaps *(planned)*.
 
-> **Previous:** [Chapter 15: Input System](15_InputSystem.md)
+> **Previous:** [Chapter 17: Input System](17_InputSystem.md)
 

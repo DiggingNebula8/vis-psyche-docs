@@ -51,8 +51,13 @@ struct VizEngine_API Transform
 ### Why Transform Order Matters
 
 We want transformations applied in this order:
-```
-Scale → Rotate → Translate
+
+```mermaid
+graph LR
+    A[Scale] --> B[Rotate] --> C[Translate]
+    style A fill:#6f6
+    style B fill:#6f6
+    style C fill:#6f6
 ```
 
 Think about it:
@@ -61,6 +66,9 @@ Think about it:
 3. **Translate** - Move it to final position
 
 If you translate first, the object rotates around the world origin, not itself!
+
+> [!CAUTION]
+> **Classic Pitfall:** Translating before rotating makes objects orbit the world origin instead of spinning in place.
 
 **But the code looks backwards:**
 ```cpp
@@ -262,5 +270,7 @@ This chapter covered Transform and Mesh:
 
 ---
 
-> **Next:** [Chapter 11: Camera System](11_CameraSystem.md) - View and projection matrices.
+> **Next:** [Chapter 13: Camera System](13_CameraSystem.md) - View and projection matrices.
+
+> **Previous:** [Chapter 11: Dear ImGui](11_DearImGui.md)
 

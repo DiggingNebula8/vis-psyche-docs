@@ -465,7 +465,9 @@ For now, direct key checks are sufficient.
 
 ---
 
-> **Next:** [Chapter 16: Camera Controller](16_CameraController.md) - WASD movement, mouse look, scroll zoom.
+> **Next:** [Chapter 18: Camera Controller](18_CameraController.md) - WASD movement, mouse look, scroll zoom.
+
+> **Previous:** [Chapter 16: Model Loading](16_ModelLoading.md)
 
 > **Reference:** For the complete Input implementation, see [Appendix A: Code Reference](A_Reference.md#input).
 

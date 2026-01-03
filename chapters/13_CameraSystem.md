@@ -270,7 +270,7 @@ This chapter covered the Camera system:
 
 ---
 
-> **Next:** [Chapter 12: Scene Management](12_SceneManagement.md) - Managing multiple objects.
+> **Next:** [Chapter 14: Scene Management](14_SceneManagement.md) - Managing multiple objects.
 
-> **Previous:** [Chapter 10: Transform & Mesh](10_TransformAndMesh.md)
+> **Previous:** [Chapter 12: Transform & Mesh](12_TransformAndMesh.md)
 

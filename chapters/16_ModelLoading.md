@@ -1171,5 +1171,7 @@ This chapter covered loading external 3D models:
 
 ---
 
-> **Next:** [Chapter 14: Input System](14_InputSystem.md) - Keyboard and mouse input with edge detection.
+> **Next:** [Chapter 17: Input System](17_InputSystem.md) - Keyboard and mouse input with edge detection.
+
+> **Previous:** [Chapter 15: Lighting](15_Lighting.md)
 

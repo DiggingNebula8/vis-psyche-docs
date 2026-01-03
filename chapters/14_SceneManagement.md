@@ -341,7 +341,7 @@ We'll cover ECS in a future chapter.
 
 ---
 
-> **Next:** [Chapter 13: Lighting](13_Lighting.md) - Blinn-Phong lighting.
+> **Next:** [Chapter 15: Lighting](15_Lighting.md) - Blinn-Phong lighting.
 
-> **Previous:** [Chapter 11: Camera System](11_CameraSystem.md)
+> **Previous:** [Chapter 13: Camera System](13_CameraSystem.md)
 

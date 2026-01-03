@@ -1,6 +1,6 @@
 \newpage
 
-# Chapter 12: Model Loading (glTF)
+# Chapter 13: Model Loading (glTF)
 
 ## The Problem: Hardcoded Geometry
 

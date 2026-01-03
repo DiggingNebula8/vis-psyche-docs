@@ -1,6 +1,6 @@
 \newpage
 
-# Chapter 10: Multiple Objects & Scene Management
+# Chapter 11: Multiple Objects & Scene Management
 
 ## The Problem
 

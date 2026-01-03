@@ -1,6 +1,6 @@
 \newpage
 
-# Chapter 11: Lighting (Blinn-Phong)
+# Chapter 12: Lighting (Blinn-Phong)
 
 ## The Problem: Flat Objects
 

@@ -47,6 +47,7 @@ A step-by-step guide to building a 3D rendering engine from scratch using C++ an
 - [Chapter 23: Engine and Game Loop](23_EngineAndGameLoop.md)
 - [Chapter 24: Sandbox Migration](24_SandboxMigration.md)
 - [Chapter 25: Event System](25_EventSystem.md)
+- [Chapter 26: Advanced Lifecycle](26_AdvancedLifecycle.md)
 
 ### Appendices
 - [Appendix A: Code Reference](A_Reference.md)

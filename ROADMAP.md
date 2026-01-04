@@ -81,10 +81,10 @@ At the end of Part VII, the engine contains:
 
 | Ch | Title | Topics | Status |
 |----|-------|--------|--------|
-| 23 | Engine and Game Loop | Engine class, main() ownership, game loop | (In-Progress)
-| 24 | SandboxMigration | Refactoring Sandbox, Engine subsystems, CreateApplication | (In-Progress)
-| 25 | Virtual Lifecycle | Application as abstract, OnCreate/Update/Render | (Not Started)
-| 26 | Event System | Dispatcher, window/input events | (Not Started)
+| 23 | Engine and Game Loop | Engine class, main() ownership, game loop, virtual lifecycle | Complete |
+| 24 | SandboxMigration | Refactoring Sandbox, Engine subsystems, CreateApplication | Complete |
+| 25 | Event System | Dispatcher, window/input events, event callbacks | (Not Started) |
+| 26 | Advanced Lifecycle | OnResize, OnEvent integration, lifecycle best practices | (Not Started) |
 
 **Deliverable**: Engine as library; Sandbox as thin client.
 

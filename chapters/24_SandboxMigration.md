@@ -457,4 +457,12 @@ Congratulations! You've completed the VizPsyche engine architecture. The engine 
 - Camera controller
 - Scene management with ImGui inspector
 
+---
+
+## What's Next
+
+With the Engine/Application architecture complete, you're ready to add an event system for handling window and input events through callbacks.
+
+> **Next:** Chapter 25: Event System
+
 > **Previous:** [Chapter 23: Engine and Game Loop](23_EngineAndGameLoop.md)

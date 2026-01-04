@@ -195,7 +195,57 @@ namespace VizEngine
 #define VP_WARN(...)     ::VizEngine::Log::GetClientLogger()->warn(__VA_ARGS__)
 #define VP_ERROR(...)    ::VizEngine::Log::GetClientLogger()->error(__VA_ARGS__)
 #define VP_CRITICAL(...) ::VizEngine::Log::GetClientLogger()->critical(__VA_ARGS__)
+
+// =============================================================================
+// Assertion Macros (Debug-only, stripped in release builds)
+// =============================================================================
+#ifdef NDEBUG
+    #define VP_CORE_ASSERT(condition, ...)
+    #define VP_ASSERT(condition, ...)
+#else
+    #define VP_CORE_ASSERT(condition, ...) \
+        do { \
+            if (!(condition)) { \
+                VP_CORE_ERROR("Assertion failed: {}", __VA_ARGS__); \
+                __debugbreak(); \
+            } \
+        } while (0)
+
+    #define VP_ASSERT(condition, ...) \
+        do { \
+            if (!(condition)) { \
+                VP_ERROR("Assertion failed: {}", __VA_ARGS__); \
+                __debugbreak(); \
+            } \
+        } while (0)
+#endif
 ```
+
+---
+
+## Assertions
+
+The logging system includes assertion macros for enforcing invariants during development:
+
+| Macro | Use Case |
+|-------|----------|
+| `VP_CORE_ASSERT(cond, msg)` | Engine-level precondition checks |
+| `VP_ASSERT(cond, msg)` | Application-level precondition checks |
+
+**Example usage:**
+```cpp
+GLFWManager& Engine::GetWindow()
+{
+    VP_CORE_ASSERT(m_Window, "GetWindow() called before successful Init()");
+    return *m_Window;
+}
+```
+
+**Key behaviors:**
+- **Debug builds**: Logs the error message and triggers `__debugbreak()` to halt in the debugger
+- **Release builds**: Completely stripped out (zero overhead) when `NDEBUG` is defined
+
+Use assertions for programming errors that should never happen in correct code—not for recoverable runtime errors.
 
 ---
 

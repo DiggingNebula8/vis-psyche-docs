@@ -14,45 +14,11 @@ Up until now, all of our game logic—scene setup, asset loading, camera control
 - **No reusability**: Every new game would need to copy-paste and modify the entire `Run()` method
 - **Testing difficulties**: Can't test game logic independently of engine setup
 
-In this chapter, we'll refactor the engine to cleanly separate **engine infrastructure** from **application logic**, introducing a proper game loop architecture.
+In this chapter, we'll refactor the engine to cleanly separate **engine infrastructure** from **application logic**.
 
 ---
 
-## The Problem
-
-Let's examine our current `Application::Run()` method structure:
-
-```cpp
-int Application::Run()
-{
-    // 1. Engine setup (GLFW, GLAD, ImGui)
-    GLFWManager window(...);
-    // ... OpenGL initialization ...
-    UIManager uiManager(window.GetWindow());
-    Renderer renderer;
-
-    // 2. Game-specific setup
-    auto pyramidMesh = Mesh::CreatePyramid();
-    Scene scene;
-    scene.Add(pyramidMesh, "Pyramid");
-    Camera camera(45.0f, 800.0f/800.0f, 0.1f, 100.0f);
-    // ... more game setup ...
-
-    // 3. Game loop
-    while (!window.WindowShouldClose())
-    {
-        // Input, update, render, UI...
-    }
-
-    return 0;
-}
-```
-
-This monolithic design means the engine can't exist independently of the game code.
-
----
-
-## Solution: Engine Singleton + Application Lifecycle
+## Architecture Overview
 
 We'll split responsibilities:
 
@@ -60,8 +26,6 @@ We'll split responsibilities:
 |-----------|---------------|
 | **Engine** | Window, OpenGL context, ImGui, game loop, subsystems |
 | **Application** | Scene setup, game logic, custom rendering, UI panels |
-
-### Architecture Overview
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -98,334 +62,644 @@ We'll split responsibilities:
 
 ---
 
-## Implementation
+## Step 1: Create Engine.h
 
-### EngineConfig Struct
-
-First, we define configuration options that applications can customize:
+**Create `VizEngine/src/VizEngine/Engine.h`:**
 
 ```cpp
-// Engine.h
-struct EngineConfig
+// VizEngine/src/VizEngine/Engine.h
+
+#pragma once
+
+#include <string>
+#include <memory>
+#include <cstdint>
+#include "Core.h"
+
+namespace VizEngine
 {
-    std::string Title = "VizPsyche";
-    uint32_t Width = 800;
-    uint32_t Height = 800;
-    bool VSync = true;
-};
-```
+	// Forward declarations
+	class Application;
+	class GLFWManager;
+	class Renderer;
+	class UIManager;
 
-### Engine Class (Singleton)
+	/**
+	 * Configuration for the Engine.
+	 * Pass to CreateApplication() to customize window and rendering settings.
+	 */
+	struct EngineConfig
+	{
+		std::string Title = "VizPsyche";
+		uint32_t Width = 800;
+		uint32_t Height = 800;
+		bool VSync = true;
+	};
 
-The Engine uses Meyer's singleton pattern for thread-safe lazy initialization:
+	/**
+	 * Engine singleton that owns the game loop and core subsystems.
+	 * Separates engine infrastructure from game logic.
+	 */
+	class VizEngine_API Engine
+	{
+	public:
+		/**
+		 * Get the singleton instance.
+		 * Uses Meyer's singleton pattern for thread-safe lazy initialization.
+		 */
+		static Engine& Get();
 
-```cpp
-// Engine.h
-class VizEngine_API Engine
-{
-public:
-    // Meyer's singleton
-    static Engine& Get();
+		// Non-copyable
+		Engine(const Engine&) = delete;
+		Engine& operator=(const Engine&) = delete;
 
-    // Non-copyable
-    Engine(const Engine&) = delete;
-    Engine& operator=(const Engine&) = delete;
+		/**
+		 * Run the game loop with the given application.
+		 * @param app The application to run (must not be null)
+		 * @param config Engine configuration settings
+		 */
+		void Run(Application* app, const EngineConfig& config = {});
 
-    // Main entry point
-    void Run(Application* app, const EngineConfig& config = {});
-    void Quit();
+		/**
+		 * Request the engine to quit at the end of the current frame.
+		 */
+		void Quit();
 
-    // Subsystem accessors
-    GLFWManager& GetWindow();
-    Renderer& GetRenderer();
-    UIManager& GetUIManager();
-    
-    float GetDeltaTime() const { return m_DeltaTime; }
+		// Subsystem accessors
+		GLFWManager& GetWindow();
+		Renderer& GetRenderer();
+		UIManager& GetUIManager();
 
-private:
-    Engine() = default;
-    ~Engine() = default;
+		/**
+		 * Get the delta time (seconds) since the last frame.
+		 */
+		float GetDeltaTime() const { return m_DeltaTime; }
 
-    bool Init(const EngineConfig& config);
-    void Shutdown();
+	private:
+		Engine() = default;
+		~Engine() = default;
 
-    // Subsystems
-    std::unique_ptr<GLFWManager> m_Window;
-    std::unique_ptr<Renderer> m_Renderer;
-    std::unique_ptr<UIManager> m_UIManager;
+		/**
+		 * Initialize the engine and all subsystems.
+		 * @return true if initialization succeeded
+		 */
+		bool Init(const EngineConfig& config);
 
-    float m_DeltaTime = 0.0f;
-    bool m_Running = false;
-};
-```
+		/**
+		 * Shutdown the engine and clean up subsystems.
+		 */
+		void Shutdown();
 
-### Engine Implementation
+		// Subsystems
+		std::unique_ptr<GLFWManager> m_Window;
+		std::unique_ptr<Renderer> m_Renderer;
+		std::unique_ptr<UIManager> m_UIManager;
 
-```cpp
-// Engine.cpp
-Engine& Engine::Get()
-{
-    static Engine instance;
-    return instance;
-}
-
-void Engine::Run(Application* app, const EngineConfig& config)
-{
-    if (!app)
-    {
-        VP_CORE_ERROR("Engine::Run called with null application!");
-        return;
-    }
-
-    if (!Init(config))
-    {
-        VP_CORE_ERROR("Engine initialization failed!");
-        return;
-    }
-
-    m_Running = true;
-    app->OnCreate();
-
-    double prevTime = glfwGetTime();
-
-    // Main game loop
-    while (m_Running && !m_Window->WindowShouldClose())
-    {
-        // Delta time
-        double currentTime = glfwGetTime();
-        m_DeltaTime = static_cast<float>(currentTime - prevTime);
-        prevTime = currentTime;
-
-        // Input phase
-        m_Window->ProcessInput();
-        m_UIManager->BeginFrame();
-
-        // Application hooks
-        app->OnUpdate(m_DeltaTime);
-        app->OnRender();
-        app->OnImGuiRender();
-
-        // Present
-        m_UIManager->Render();
-        m_Window->SwapBuffersAndPollEvents();
-    }
-
-    app->OnDestroy();
-    Shutdown();
+		float m_DeltaTime = 0.0f;
+		bool m_Running = false;
+	};
 }
 ```
 
-### Application Base Class
+---
 
-The Application class becomes an abstract base with virtual lifecycle methods:
+## Step 2: Create Engine.cpp
+
+**Create `VizEngine/src/VizEngine/Engine.cpp`:**
 
 ```cpp
-// Application.h
-class VizEngine_API Application
+// VizEngine/src/VizEngine/Engine.cpp
+
+#include "Engine.h"
+#include "Application.h"
+#include "Log.h"
+
+#include "OpenGL/GLFWManager.h"
+#include "OpenGL/Renderer.h"
+#include "OpenGL/ErrorHandling.h"
+#include "GUI/UIManager.h"
+
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
+namespace VizEngine
 {
-public:
-    Application();
-    virtual ~Application();
+	Engine& Engine::Get()
+	{
+		static Engine instance;
+		return instance;
+	}
 
-    // Non-copyable
-    Application(const Application&) = delete;
-    Application& operator=(const Application&) = delete;
+	void Engine::Run(Application* app, const EngineConfig& config)
+	{
+		// Note: Caller retains ownership of app pointer (see EntryPoint.h)
+		if (!app)
+		{
+			VP_CORE_ERROR("Engine::Run called with null application!");
+			return;
+		}
 
-    virtual void OnCreate() {}
-    virtual void OnUpdate(float deltaTime) { (void)deltaTime; }
-    virtual void OnRender() {}
-    virtual void OnImGuiRender() {}
-    virtual void OnDestroy() {}
-};
+		if (!Init(config))
+		{
+			VP_CORE_ERROR("Engine initialization failed!");
+			return;
+		}
 
-// Factory function implemented by client applications
-Application* CreateApplication(EngineConfig& config);
+		m_Running = true;
+
+		try
+		{
+			// Application initialization
+			app->OnCreate();
+
+			double prevTime = glfwGetTime();
+
+			// Main game loop
+			while (m_Running && !m_Window->WindowShouldClose())
+			{
+				// Delta time calculation
+				double currentTime = glfwGetTime();
+				m_DeltaTime = static_cast<float>(currentTime - prevTime);
+				prevTime = currentTime;
+
+				// Input phase
+				m_Window->ProcessInput();
+				m_UIManager->BeginFrame();
+
+				// Application hooks
+				app->OnUpdate(m_DeltaTime);
+				app->OnRender();
+				app->OnImGuiRender();
+
+				// Present phase
+				m_UIManager->Render();
+				m_Window->SwapBuffersAndPollEvents();
+			}
+
+			// Application cleanup
+			app->OnDestroy();
+		}
+		catch (const std::exception& e)
+		{
+			VP_CORE_ERROR("Exception in engine loop: {}", e.what());
+		}
+		catch (...)
+		{
+			VP_CORE_ERROR("Unknown exception in engine loop");
+		}
+
+		Shutdown();
+	}
+
+	void Engine::Quit()
+	{
+		m_Running = false;
+	}
+
+	GLFWManager& Engine::GetWindow()
+	{
+		VP_CORE_ASSERT(m_Window, "Engine not initialized or already shut down!");
+		return *m_Window;
+	}
+
+	Renderer& Engine::GetRenderer()
+	{
+		VP_CORE_ASSERT(m_Renderer, "Engine not initialized or already shut down!");
+		return *m_Renderer;
+	}
+
+	UIManager& Engine::GetUIManager()
+	{
+		VP_CORE_ASSERT(m_UIManager, "Engine not initialized or already shut down!");
+		return *m_UIManager;
+	}
+
+	bool Engine::Init(const EngineConfig& config)
+	{
+		VP_CORE_INFO("Initializing Engine...");
+
+		// Create window
+		m_Window = std::make_unique<GLFWManager>(
+			config.Width, 
+			config.Height, 
+			config.Title.c_str()
+		);
+
+		// Initialize GLAD
+		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+		{
+			VP_CORE_ERROR("Failed to initialize GLAD");
+			return false;
+		}
+
+		// OpenGL state setup
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_DEPTH_TEST);
+
+		// Create subsystems
+		m_UIManager = std::make_unique<UIManager>(m_Window->GetWindow());
+		m_Renderer = std::make_unique<Renderer>();
+
+		// Enable OpenGL debug output
+		ErrorHandling::HandleErrors();
+
+		VP_CORE_INFO("Engine initialized successfully");
+		return true;
+	}
+
+	void Engine::Shutdown()
+	{
+		VP_CORE_INFO("Shutting down Engine...");
+
+		// Reset subsystems in reverse order of creation
+		m_Renderer.reset();
+		m_UIManager.reset();
+		m_Window.reset();
+
+		VP_CORE_INFO("Engine shutdown complete");
+	}
+}
 ```
 
 > [!NOTE]
-> The constructor and destructor are declared in the header but defined in Application.cpp. This ensures proper vtable generation in the DLL.
+> The game loop is wrapped in a try-catch block to ensure `Shutdown()` is always called, even if an application hook throws an exception. This prevents resource leaks.
 
-### Entry Point
+> [!IMPORTANT]
+> The subsystem accessors use `VP_CORE_ASSERT` to guard against null pointer dereference. These trigger in debug builds if accessed before `Init()` succeeds or after `Shutdown()`.
 
-The entry point in VizEngine handles `main()` for the client:
+---
+
+## Step 3: Update Application.h
+
+The Application class becomes an abstract base with virtual lifecycle methods.
+
+**Replace `VizEngine/src/VizEngine/Application.h`:**
 
 ```cpp
-// EntryPoint.h
+// VizEngine/src/VizEngine/Application.h
+
+#pragma once
+
+#include "Core.h"
+
+namespace VizEngine
+{
+	// Forward declaration
+	struct EngineConfig;
+
+	/**
+	 * Base class for game applications.
+	 * Inherit from this class and override lifecycle methods to implement your game.
+	 */
+	class VizEngine_API Application
+	{
+	public:
+		Application();
+		virtual ~Application();
+
+		// Non-copyable
+		Application(const Application&) = delete;
+		Application& operator=(const Application&) = delete;
+
+		/**
+		 * Called once before the game loop starts.
+		 * Use for loading assets, creating the scene, and initial setup.
+		 */
+		virtual void OnCreate() {}
+
+		/**
+		 * Called every frame.
+		 * @param deltaTime Time in seconds since the last frame.
+		 * Use for game logic, camera controllers, physics updates.
+		 */
+		virtual void OnUpdate(float deltaTime) { (void)deltaTime; }
+
+		/**
+		 * Called every frame after OnUpdate.
+		 * Use for rendering the scene.
+		 */
+		virtual void OnRender() {}
+
+		/**
+		 * Called every frame after OnRender.
+		 * Use for ImGui panels and debug UI.
+		 */
+		virtual void OnImGuiRender() {}
+
+		/**
+		 * Called once after the game loop ends.
+		 * Use for cleanup (though RAII handles most cases).
+		 */
+		virtual void OnDestroy() {}
+	};
+
+	/**
+	 * Factory function implemented by client applications.
+	 * @param config Engine configuration that the application can modify.
+	 * @return A new Application instance.
+	 */
+	Application* CreateApplication(EngineConfig& config);
+}
+```
+
+---
+
+## Step 4: Update Application.cpp
+
+**Replace `VizEngine/src/VizEngine/Application.cpp`:**
+
+```cpp
+// VizEngine/src/VizEngine/Application.cpp
+
+#include "Application.h"
+
+namespace VizEngine
+{
+	// Out-of-line definitions for exported class with virtual destructor.
+	// This ensures proper vtable generation in the DLL.
+	Application::Application() = default;
+	Application::~Application() = default;
+}
+```
+
+> [!NOTE]
+> The constructor and destructor must be defined out-of-line (in the .cpp file) for proper vtable generation when building VizEngine as a DLL.
+
+---
+
+## Step 5: Update EntryPoint.h
+
+The entry point now uses the Engine singleton.
+
+**Replace `VizEngine/src/VizEngine/EntryPoint.h`:**
+
+```cpp
+// VizEngine/src/VizEngine/EntryPoint.h
+
 #pragma once
 
 #ifdef VP_PLATFORM_WINDOWS
 
 #include "Engine.h"
-#include "Application.h"
+#include "Application.h"  // For CreateApplication declaration
 
 int main(int argc, char** argv)
 {
-    (void)argc;
-    (void)argv;
+	(void)argc;
+	(void)argv;
 
-    VizEngine::Log::Init();
+	VizEngine::Log::Init();
 
-    VizEngine::EngineConfig config;
-    auto app = VizEngine::CreateApplication(config);
-    VizEngine::Engine::Get().Run(app, config);
-    delete app;
+	VizEngine::EngineConfig config;
+	auto app = VizEngine::CreateApplication(config);
+	VizEngine::Engine::Get().Run(app, config);
+	delete app;
 
-    return 0;
+	return 0;
 }
 
 #endif
 ```
 
 > [!NOTE]
-> `EntryPoint.h` lives in VizEngine but is included by client applications via `VizEngine.h`. This means clients don't need to write their own `main()`.
+> `EntryPoint.h` lives in VizEngine but is included by client applications via `VizEngine.h`. This means clients don't need to write their own `main()`. The entry point owns the Application pointer and deletes it after the engine exits.
 
-## DLL Architecture Considerations
+---
 
-When building VizEngine as a shared library (DLL), several patterns must be followed:
+## Step 6: Update UIManager.h
 
-### VizEngine_API Macro
+UIManager provides wrapper methods so applications don't call ImGui directly—this avoids DLL boundary issues with ImGui's global context.
 
-Classes with methods defined in .cpp files need the export macro:
-
-```cpp
-class VizEngine_API Engine { ... };
-class VizEngine_API Application { ... };
-class VizEngine_API UIManager { ... };
-```
-
-### Header-Only Structs
-
-Simple structs fully defined in headers (with inline constructors) do **NOT** need `VizEngine_API`:
+**Replace `VizEngine/src/VizEngine/GUI/UIManager.h`:**
 
 ```cpp
-// These are fine without VizEngine_API
-struct DirectionalLight { ... };
-struct PointLight { ... };
-struct Material { ... };
-```
+// VizEngine/src/VizEngine/GUI/UIManager.h
 
-### ImGui and DLL Boundaries
-
-ImGui uses global state (`GImGui` context). When ImGui is compiled into a DLL and the application tries to call ImGui functions directly, you get separate contexts—causing crashes.
-
-**Solution**: UIManager provides wrapper methods so applications go through the DLL:
-
-```cpp
-// UIManager provides wrappers
-class UIManager
-{
-public:
-    // Applications call these instead of ImGui:: directly
-    void Text(const char* fmt, ...);
-    void Separator();
-    bool Button(const char* label);
-    bool SliderFloat(const char* label, float* value, float min, float max);
-    bool DragFloat3(const char* label, float* values, float speed = 0.1f);
-    bool ColorEdit3(const char* label, float* color);
-    bool ColorEdit4(const char* label, float* color);
-    bool Checkbox(const char* label, bool* value);
-    bool Selectable(const char* label, bool selected);
-    void SameLine();
-    // ... more as needed
-};
-```
-
-The implementations simply forward to ImGui:
-
-```cpp
-void UIManager::Text(const char* fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    ImGui::TextV(fmt, args);
-    va_end(args);
-}
-
-bool UIManager::Button(const char* label)
-{
-    return ImGui::Button(label);
-}
-```
-
-## Migrating Sandbox
-
-With the new architecture, Sandbox becomes much cleaner:
-
-```cpp
-// SandboxApp.cpp
-#include <VizEngine.h>
-
-class Sandbox : public VizEngine::Application
-{
-public:
-    void OnCreate() override
-    {
-        // Load assets and build scene
-        m_PyramidMesh = VizEngine::Mesh::CreatePyramid();
-        m_Scene.Add(m_PyramidMesh, "Pyramid");
-        m_Camera = VizEngine::Camera(45.0f, 1.0f, 0.1f, 100.0f);
-        m_LitShader = std::make_unique<VizEngine::Shader>("...");
-    }
-
-    void OnUpdate(float deltaTime) override
-    {
-        // Camera controller, input handling
-        if (VizEngine::Input::IsKeyHeld(VizEngine::KeyCode::W))
-            m_Camera.MoveForward(5.0f * deltaTime);
-    }
-
-    void OnRender() override
-    {
-        auto& renderer = VizEngine::Engine::Get().GetRenderer();
-        renderer.Clear(m_ClearColor);
-        m_Scene.Render(renderer, *m_LitShader, m_Camera);
-    }
-
-    void OnImGuiRender() override
-    {
-        auto& ui = VizEngine::Engine::Get().GetUIManager();
-        
-        ui.StartWindow("Scene Controls");
-        ui.ColorEdit4("Clear Color", m_ClearColor);
-        ui.SliderFloat("Rotation Speed", &m_RotationSpeed, 0.0f, 5.0f);
-        ui.EndWindow();
-    }
-
-private:
-    VizEngine::Scene m_Scene;
-    VizEngine::Camera m_Camera;
-    std::unique_ptr<VizEngine::Shader> m_LitShader;
-    float m_ClearColor[4] = {0.1f, 0.1f, 0.15f, 1.0f};
-    float m_RotationSpeed = 0.5f;
-};
-
-VizEngine::Application* VizEngine::CreateApplication(VizEngine::EngineConfig& config)
-{
-    config.Title = "Sandbox - VizPsyche";
-    config.Width = 800;
-    config.Height = 800;
-    return new Sandbox();
-}
-```
-
-Notice:
-- Only one include: `#include <VizEngine.h>`
-- UI goes through `UIManager` wrappers, not direct `ImGui::` calls
-- Subsystems accessed via `Engine::Get().GetRenderer()`, etc.
-
-## Public API Design
-
-`VizEngine.h` exports the complete public API:
-
-```cpp
 #pragma once
+
+#include <string>
+#include "VizEngine/Core.h"
+
+// Forward declaration - avoid exposing GLFW to consumers
+struct GLFWwindow;
+
+namespace VizEngine
+{
+	/**
+	 * Manages ImGui integration with the engine.
+	 * Provides wrapper methods so client applications don't need direct ImGui access.
+	 * This avoids DLL boundary issues with ImGui's global context.
+	 */
+	class VizEngine_API UIManager
+	{
+	public:
+		UIManager(GLFWwindow* window);
+		~UIManager();
+
+		// Non-copyable (owns ImGui context state)
+		UIManager(const UIManager&) = delete;
+		UIManager& operator=(const UIManager&) = delete;
+
+		// Frame lifecycle
+		void BeginFrame();
+		void Render();
+
+		// Window helpers
+		void StartWindow(const std::string& windowName);
+		void EndWindow();
+
+		// =========================================================================
+		// ImGui Widget Wrappers
+		// These forward to ImGui internally so consumers don't need ImGui access
+		// =========================================================================
+		
+		// Text and labels
+		void Text(const char* fmt, ...);
+		void Separator();
+		void SameLine();
+
+		// Input widgets
+		bool Button(const char* label);
+		bool Checkbox(const char* label, bool* value);
+		bool SliderFloat(const char* label, float* value, float min, float max);
+		bool DragFloat3(const char* label, float* values, float speed = 0.1f, float min = 0.0f, float max = 0.0f);
+		
+		// Color editors
+		bool ColorEdit3(const char* label, float* color);
+		bool ColorEdit4(const char* label, float* color);
+		
+		// Selection
+		bool Selectable(const char* label, bool selected);
+
+	private:
+		void Init(GLFWwindow* window);
+		void Shutdown();
+	};
+}
+```
+
+---
+
+## Step 7: Update UIManager.cpp
+
+**Replace `VizEngine/src/VizEngine/GUI/UIManager.cpp`:**
+
+```cpp
+// VizEngine/src/VizEngine/GUI/UIManager.cpp
+
+#include "UIManager.h"
+
+#include <cstdarg>
+#include <GLFW/glfw3.h>
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
+namespace VizEngine
+{
+	UIManager::UIManager(GLFWwindow* window)
+	{
+		Init(window);
+	}
+
+	UIManager::~UIManager()
+	{
+		Shutdown();
+	}
+
+	void UIManager::BeginFrame()
+	{
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+	}
+
+	void UIManager::Render()
+	{
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	}
+
+	void UIManager::StartWindow(const std::string& windowName)
+	{
+		ImGui::Begin(windowName.c_str());
+	}
+
+	void UIManager::EndWindow()
+	{
+		ImGui::End();
+	}
+
+	// =========================================================================
+	// ImGui Widget Wrappers
+	// =========================================================================
+
+	void UIManager::Text(const char* fmt, ...)
+	{
+		va_list args;
+		va_start(args, fmt);
+		ImGui::TextV(fmt, args);
+		va_end(args);
+	}
+
+	void UIManager::Separator()
+	{
+		ImGui::Separator();
+	}
+
+	void UIManager::SameLine()
+	{
+		ImGui::SameLine();
+	}
+
+	bool UIManager::Button(const char* label)
+	{
+		return ImGui::Button(label);
+	}
+
+	bool UIManager::Checkbox(const char* label, bool* value)
+	{
+		return ImGui::Checkbox(label, value);
+	}
+
+	bool UIManager::SliderFloat(const char* label, float* value, float min, float max)
+	{
+		return ImGui::SliderFloat(label, value, min, max);
+	}
+
+	bool UIManager::DragFloat3(const char* label, float* values, float speed, float min, float max)
+	{
+		return ImGui::DragFloat3(label, values, speed, min, max);
+	}
+
+	bool UIManager::ColorEdit3(const char* label, float* color)
+	{
+		return ImGui::ColorEdit3(label, color);
+	}
+
+	bool UIManager::ColorEdit4(const char* label, float* color)
+	{
+		return ImGui::ColorEdit4(label, color);
+	}
+
+	bool UIManager::Selectable(const char* label, bool selected)
+	{
+		return ImGui::Selectable(label, selected);
+	}
+
+	// =========================================================================
+	// Private Methods
+	// =========================================================================
+
+	void UIManager::Init(GLFWwindow* window)
+	{
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO();
+		(void)io;
+		ImGui::StyleColorsDark();
+		ImGui_ImplGlfw_InitForOpenGL(window, true);
+		ImGui_ImplOpenGL3_Init("#version 460");
+	}
+
+	void UIManager::Shutdown()
+	{
+		ImGui_ImplOpenGL3_Shutdown();
+		ImGui_ImplGlfw_Shutdown();
+		ImGui::DestroyContext();
+	}
+}
+```
+
+> [!IMPORTANT]
+> **Why wrappers?** ImGui uses global state (`GImGui` context). When ImGui is compiled into a DLL and the application calls `ImGui::` functions directly, you get separate contexts—causing crashes. By routing all ImGui calls through UIManager (which is in the DLL), we use the same context.
+
+---
+
+## Step 8: Update VizEngine.h
+
+Add the Engine header to the public API.
+
+**Update `VizEngine/src/VizEngine.h`:**
+
+```cpp
+// VizEngine/src/VizEngine.h
+
+#pragma once
+
+// =============================================================================
+// VizEngine Public API
+// =============================================================================
+// This is the main header for VizEngine applications.
+// Include this single header to access the entire public API.
 
 // Core engine
 #include "VizEngine/Application.h"
 #include "VizEngine/Engine.h"
 #include "VizEngine/Log.h"
 
-// Subsystems
+// Subsystems accessible to applications
 #include "VizEngine/GUI/UIManager.h"
 #include "VizEngine/OpenGL/Renderer.h"
 #include "VizEngine/OpenGL/Shader.h"
@@ -446,47 +720,22 @@ Notice:
 #include "VizEngine/EntryPoint.h"
 ```
 
-This means client applications only need:
-```cpp
-#include <VizEngine.h>
+---
+
+## Step 9: Update CMakeLists.txt
+
+Add the new Engine files to the build.
+
+**Update `VizEngine/CMakeLists.txt` sources:**
+
+Add to `VIZENGINE_SOURCES`:
+```cmake
+src/VizEngine/Engine.cpp
 ```
 
-## Consistency Patterns
-
-Throughout the engine, follow these patterns for consistency:
-
-### Non-Copyable Classes
-
-All classes that own resources should be non-copyable:
-
-```cpp
-class SomeClass
-{
-public:
-    // Non-copyable
-    SomeClass(const SomeClass&) = delete;
-    SomeClass& operator=(const SomeClass&) = delete;
-};
-```
-
-Applied to: `Engine`, `Application`, `UIManager`
-
-### Out-of-Line Definitions for Exported Classes
-
-For classes with `VizEngine_API`, define constructors/destructors in .cpp:
-
-```cpp
-// Header
-class VizEngine_API Application
-{
-public:
-    Application();
-    virtual ~Application();
-};
-
-// Source
-Application::Application() = default;
-Application::~Application() = default;
+Add to `VIZENGINE_HEADERS`:
+```cmake
+src/VizEngine/Engine.h
 ```
 
 ---
@@ -497,7 +746,7 @@ Application::~Application() = default;
 |---------|-------|----------|
 | App crashes immediately | `CreateApplication` returns null | Check factory function returns valid pointer |
 | ImGui context assertion | Direct ImGui calls from Sandbox | Use `UIManager` wrappers instead of `ImGui::` |
-| "Engine not initialized" | Accessing subsystems before `Run()` | Only access Engine subsystems inside lifecycle methods |
+| `VP_CORE_ASSERT` failure | Accessing subsystems before `Init()` succeeds | Only access Engine subsystems inside lifecycle methods |
 | Input not working | `Input::Init` not called | Engine initializes Input via GLFWManager |
 | Linker errors | Missing `VizEngine_API` | Add export macro to classes with .cpp implementation |
 
@@ -513,27 +762,14 @@ You have:
 - `Application` base class with virtual lifecycle methods
 - `EntryPoint.h` that owns `main()`
 - `UIManager` wrappers for DLL-safe ImGui access
-- Clean separation of engine infrastructure from game code
-
----
-
-## Summary
-
-| Before | After |
-|--------|-------|
-| Monolithic `Application::Run()` | Clean Engine/Application separation |
-| Game code mixed with engine setup | Virtual lifecycle methods |
-| Direct ImGui calls | UIManager wrappers for DLL safety |
-| Multiple includes needed | Single `#include <VizEngine.h>` |
-
-The engine now follows the professional pattern used by engines like Hazel, allowing games to focus purely on game logic while the engine handles infrastructure.
+- Exception handling to ensure cleanup on errors
 
 ---
 
 ## What's Next
 
-In **Chapter 24**, we'll make Application a true abstract base class with virtual lifecycle methods, allowing derived applications to implement their own startup, update, and shutdown logic.
+In **Chapter 24**, we'll migrate the Sandbox application to use the new Engine/Application architecture.
 
-> **Next:** [Chapter 24: Virtual Lifecycle](24_VirtualLifecycle.md)
+> **Next:** [Chapter 24: Sandbox Migration](24_SandboxMigration.md)
 
 > **Previous:** [Chapter 22: Camera Controller](22_CameraController.md)

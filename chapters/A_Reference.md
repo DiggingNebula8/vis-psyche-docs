@@ -373,6 +373,7 @@ cmake --build build --config Debug
 | Material textures, PBR properties | [20 Model Loading (Materials)](20_ModelLoaderMaterials.md) |
 | Input class, keyboard, mouse, edge detection | [21 Input System](21_InputSystem.md) |
 | WASD movement, mouse look, zoom | [22 Camera Controller](22_CameraController.md) |
+| Engine class, game loop, lifecycle methods | [23 Engine and Game Loop](23_EngineAndGameLoop.md) |
 
 ---
 

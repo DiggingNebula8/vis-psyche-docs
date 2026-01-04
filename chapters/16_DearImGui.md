@@ -207,6 +207,9 @@ int Application::Run()
 }
 ```
 
+> [!NOTE]
+> **Direct ImGui Access**: All game code currently runs inside the DLL's `Application::Run()`. You're calling `ImGui::` functions directly, which works fine since everything is within the same binary. When we later refactor to move game logic to the client application, direct `ImGui::` calls across the DLL boundary will cause context issues. We'll then add UIManager wrapper methods to handle this safely.
+
 ---
 
 ## Common ImGui Widgets

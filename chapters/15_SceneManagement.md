@@ -245,6 +245,9 @@ for (auto& obj : scene)
 }
 ```
 
+> [!NOTE]
+> **Scene Setup Location**: Scene creation and management currently happens in `Application::Run()`. When we later separate game logic from engine infrastructure, scene setup will move to an `OnCreate()` lifecycle method, keeping Application focused on game-specific code.
+
 ---
 
 ## Common Issues

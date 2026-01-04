@@ -360,6 +360,9 @@ int Application::Run()
 > [!NOTE]
 > `Application::Run` returns `int` to allow error codes. The constructor of `GLFWManager` handles all initialization—no separate `Init()` call needed.
 
+> [!NOTE]
+> **Game Loop Ownership**: `Application::Run()` currently owns the game loop and all engine subsystems. This works well for a single application but makes it hard to reuse the engine. Later, we'll move the game loop into an `Engine` class, and `Application` will provide hooks (`OnUpdate`, `OnRender`) for game-specific logic.
+
 ---
 
 ## Step 8: Build and Run

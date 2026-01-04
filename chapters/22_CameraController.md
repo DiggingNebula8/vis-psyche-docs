@@ -100,6 +100,9 @@ int Application::Run()
 }
 ```
 
+> [!NOTE]
+> **Controller Logic Location**: Camera movement, input handling, and game-specific logic currently live in `Application::Run()`. This works but couples game behavior to the engine. Later, we'll introduce lifecycle methods (`OnUpdate`, `OnRender`) that separate engine flow from game logic, making it easier to create different applications using the same engine.
+
 > [!IMPORTANT]
 > Remember:
 > - `Input::Update()` must be called at the start of each frame

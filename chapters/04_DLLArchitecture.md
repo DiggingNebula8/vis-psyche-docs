@@ -199,6 +199,9 @@ namespace VizEngine
 }  // namespace VizEngine
 ```
 
+> [!NOTE]
+> **Monolithic Application**: Currently, `Application::Run()` contains all engine infrastructure (window, OpenGL, game loop) and game logic in one method. This is intentional for learning—it's easier to understand everything in one place. Later, we'll refactor to separate engine infrastructure from game-specific code, improving reusability and testability.
+
 ---
 
 ## Step 4: Create EntryPoint.h
